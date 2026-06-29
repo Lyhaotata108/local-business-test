@@ -1,0 +1,6 @@
+{
+  "name": "Local Business Growth Diagnostic Tool",
+  "description": "A free diagnostic tool that helps local business owners understand why they are not getting more calls, bookings, or customers \u2014 and what to fix first.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
