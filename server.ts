@@ -8,7 +8,7 @@ app.use(express.json());
 const PORT = 3000;
 
 app.post('/api/leads', async (req, res) => {
-  const { email, score, answers, topProblems, name, website, businessType, categoryScores, mainIssueCategory } = req.body;
+  const { email, score, answers, topProblems, name, website, businessType, categoryScores, mainIssueCategory, lead_id } = req.body;
 
   const smtpEmail = process.env.SMTP_EMAIL;
   const smtpPassword = process.env.SMTP_PASSWORD;
@@ -73,6 +73,7 @@ New lead from the Local Business Diagnostic Tool!
 Status: ${urgency}
 
 Contact Details:
+Outreach Lead ID: ${lead_id || 'N/A (direct visit)'}
 Email: ${email}
 Name: ${name || 'N/A'}
 Website: ${website || 'N/A'}
