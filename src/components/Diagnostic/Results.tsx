@@ -15,6 +15,7 @@ const Results: React.FC<ResultsProps> = ({ answers, onReset }) => {
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
 
   const { totalScore, categoryScores, mainIssueCategory, topProblems } = calculateScores(answers);
 
@@ -67,11 +68,14 @@ const Results: React.FC<ResultsProps> = ({ answers, onReset }) => {
           },
           body: JSON.stringify({
             email,
+            name,
             score: totalScore,
             answers,
             topProblems,
             website: answers.website_url,
-            businessType: answers.business_type
+            businessType: answers.business_type,
+            categoryScores,
+            mainIssueCategory,
           }),
         });
         
@@ -175,6 +179,13 @@ const Results: React.FC<ResultsProps> = ({ answers, onReset }) => {
                   
                   {!emailSubmitted ? (
                     <form onSubmit={handleEmailSubmit} className="space-y-4">
+                      <Input
+                        type="text"
+                        placeholder="Your name (optional)"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-blue-200 focus:ring-white/50"
+                      />
                       <Input 
                         type="email" 
                         placeholder="Email address" 
@@ -204,9 +215,9 @@ const Results: React.FC<ResultsProps> = ({ answers, onReset }) => {
                   <h4 className="font-semibold text-slate-900 mb-4">Category Breakdown</h4>
                   <div className="space-y-3">
                     {[
-                      { name: 'Visibility', score: categoryScores.visibility, max: 20 },
-                      { name: 'Trust', score: categoryScores.trust, max: 20 },
-                      { name: 'Conversion', score: categoryScores.conversion, max: 20 },
+                      { name: 'Visibility', score: categoryScores.visibility, max: 22.5 },
+                      { name: 'Trust', score: categoryScores.trust, max: 22.5 },
+                      { name: 'Conversion', score: categoryScores.conversion, max: 25 },
                       { name: 'Offer', score: categoryScores.offer, max: 15 },
                       { name: 'Retention', score: categoryScores.retention, max: 15 },
                       { name: 'Competition', score: categoryScores.competition, max: 10 },
