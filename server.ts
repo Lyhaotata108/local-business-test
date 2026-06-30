@@ -8,7 +8,7 @@ app.use(express.json());
 const PORT = 3000;
 
 app.post('/api/leads', async (req, res) => {
-  const { email, score, answers, topProblems, name, website, businessType } = req.body;
+  const { email, score, answers, topProblems, name, website, businessType, categoryScores, mainIssueCategory } = req.body;
 
   const smtpEmail = process.env.SMTP_EMAIL;
   const smtpPassword = process.env.SMTP_PASSWORD;
@@ -28,15 +28,49 @@ app.post('/api/leads', async (req, res) => {
       },
     });
 
-    const formattedAnswers = Object.entries(answers).map(([key, value]) => `${key}: ${value}`).join('\n');
-    const formattedProblems = topProblems?.map((p: string, i: number) => `${i + 1}. ${p}`).join('\n') || 'None';
+    const formattedAnswers = Object.entries(answers || {}).map(([key, value]) => `${key}: ${value}`).join('\n');
+    const formattedProblems = topProblems?.length
+      ? topProblems.map((p: string, i: number) => `${i + 1}. ${p}`).join('\n')
+      : 'None detected';
+
+    const categoryLabels: Record<string, string> = {
+      visibility: 'Visibility',
+      trust: 'Trust',
+      conversion: 'Conversion',
+      offer: 'Offer/Positioning',
+      retention: 'Retention',
+      competition: 'Competition',
+    };
+    const categoryMax: Record<string, number> = {
+      visibility: 22.5,
+      trust: 22.5,
+      conversion: 25,
+      offer: 15,
+      retention: 15,
+      competition: 10,
+    };
+    const formattedCategoryScores = categoryScores
+      ? Object.entries(categoryScores)
+          .map(([cat, val]) => `  ${categoryLabels[cat] || cat}: ${val} / ${categoryMax[cat] ?? '?'}`)
+          .join('\n')
+      : '  N/A';
+
+    const mainIssueLabel = mainIssueCategory ? (categoryLabels[mainIssueCategory] || mainIssueCategory) : 'N/A';
+
+    // 紧急程度标记，方便邮箱里一眼判断要不要优先跟进
+    const urgency = score < 40 ? '🔴 HIGH PRIORITY (High Risk)'
+      : score < 60 ? '🟠 Major Customer Loss Risk'
+      : score < 75 ? '🟡 Growth Leaks Detected'
+      : '🟢 Healthy';
 
     const mailOptions = {
       from: smtpEmail,
       to: notifyEmail,
-      subject: `New Diagnostic Lead: ${businessType || 'Local Business'} - Score ${score}`,
+      subject: `[${urgency.split(' ')[0]}] New Lead: ${businessType || 'Local Business'} - Score ${score}/100`,
       text: `
 New lead from the Local Business Diagnostic Tool!
+
+Status: ${urgency}
 
 Contact Details:
 Email: ${email}
@@ -45,6 +79,10 @@ Website: ${website || 'N/A'}
 
 Diagnostic Results:
 Overall Score: ${score}/100
+Main Issue Area: ${mainIssueLabel}
+
+Category Breakdown:
+${formattedCategoryScores}
 
 Top Problems Found:
 ${formattedProblems}
